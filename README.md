@@ -1,79 +1,130 @@
-# How Generative AI Changes Effort Allocation
+<div align="center">
 
-**Behavioral analytics · Causal inference · KPI design · Discrete-choice modeling**
+# Does AI Increase Participation in Shared Projects?
 
-I examined whether access to generative AI changes where knowledge workers direct their effort. Using developer activity around Italy's temporary ChatGPT suspension, I analyzed the balance between public and private contribution and the decision to engage with new projects.
+Understanding where user activity goes—and what engagement totals can hide.
 
-> **Key finding:** Losing access to ChatGPT reduced the share of developer effort directed toward public contribution by approximately **3%**, with a stronger response among more experienced developers.
+**Behavioral analytics · Metric design · Causal inference · Choice modeling**
 
-This is a relative change in the public-share measure, not a three-percentage-point decrease.
+[Decision](#the-product-decision) · [Results](#results-and-interpretation) · [Approach](#analytical-approach) · [Code](#explore-the-implementation)
 
-## The problem
+</div>
 
-Total activity can conceal a shift in behavior. A developer may maintain similar overall activity while doing less work that others can inspect, reuse, or build upon. I framed the analysis around effort allocation: whether AI changes the proportion of observable activity devoted to public contribution and the breadth of engagement across projects.
+## The product decision
 
-## My contribution
+**Does an AI tool strengthen participation in a shared developer ecosystem, or change where users direct their activity?**
 
-I led the research question, outcome design, data preparation, matching, causal analysis, validation, and interpretation. I constructed longitudinal measures of public and private contribution and modeled new-project entry on a **user-project-week panel using conditional logistic regression**. This connected an aggregate allocation effect to a specific behavioral decision: whether to engage with a new project.
+For a platform built around shared projects, total activity is only part of the picture. Public contributions can be inspected, reused, and built upon by others. Private contributions represent a different allocation of activity. A team evaluating engagement needs to understand both the total and its composition.
 
-The study draws on the shared research pipeline spanning approximately **680,000 developers, 2 million repositories, and 13.6 million user-week observations**. Those totals describe the broader data resource; model-specific samples apply their own matching and eligibility rules.
+I measured the share of activity directed toward public contribution and examined participation in new projects. Using Italy's temporary ChatGPT suspension as an external change in access, I estimated how these behaviors changed relative to developers in France and Portugal.
 
-## How I approached it
+## Results and interpretation
 
-1. **Define the behavioral KPI.** Measure public contribution as an aggregate of seven public activity types. Construct public share relative to public plus private contribution; distinguish no observed activity from an observed share of zero.
-2. **Build the developer-week panel.** Align activity, country, experience, and calendar information. Treat private contribution as an available activity measure, without claiming access to private source code or the content of private work.
-3. **Create comparable cohorts.** Match Italian developers to developers in France and Portugal using pre-treatment profile and behavior measures.
-4. **Estimate the allocation effect.** Apply matched difference-in-differences with developer and week fixed effects and developer-clustered inference. Analyze public share and its public/private components separately.
-5. **Investigate the mechanism.** Decompose public activity into commits, pull requests, reviews, issues, repository creation, and discussions to distinguish which contributions respond.
-6. **Model project entry.** Use conditional logistic regression on a user-project-week panel to examine new-project engagement and differences by experience. Treat the eligible project set and conditioning groups as explicit modeling decisions.
+| Evidence | Product meaning | Interpretation boundary |
+|---|---|---|
+| **Approximately 3% relative decrease in public share during lost access** | Access to the tool affected the composition of participation | This is not a three-percentage-point decrease or a measured change in time spent |
+| **Reduced public work drove the share decrease** | A ratio's components explain what changed in engagement | The result should not be described simply as users doing more private work |
+| **Stronger response among more experienced developers** | An average engagement effect can conceal segment differences | Experience patterns motivate product hypotheses; they do not establish a targeting strategy |
+| **AI access broadened cross-project engagement** | Participation breadth adds information beyond contribution volume | Project entry is distinct from sustained adoption or retention |
+
+The response was concentrated in codification-intensive activities and the breadth of cross-project engagement. **The decision-relevant finding is that access can influence where contributions go, alongside how much activity occurs.**
+
+## How this would inform an engagement strategy
+
+| Product question | Measurement or evaluation choice |
+|---|---|
+| Is the shared ecosystem becoming more active? | Pair public share with public volume, private volume, and total activity |
+| Are users exploring more of the platform? | Measure new-project entry separately from repeated activity in existing projects |
+| Which users respond? | Examine experience segments before interpreting the population average |
+| Would an onboarding or discovery change help? | Use the observed entry patterns to formulate a subsequent product experiment |
+
+These are applications of the analysis, not interventions tested here. Revenue, retention, and the business value of individual contributions were not measured. Public participation is relevant to a shared ecosystem; it is not automatically the preferred outcome for every developer or product.
+
+## Analytical approach
+
+### 1. Build an engagement metric with an explicit denominator
+
+I aggregated seven public activity types: repository creation, commits, pull requests, reviews, discussion initiation, discussion answers, and issues.
+
+```text
+public_share = public_contributions / (public_contributions + private_contributions)
+```
+
+The developer-week panel aligns activity, country, experience, and calendar information. Private contribution measures do not imply access to private source code or its contents. Counts are behavioral proxies, not observed hours of effort.
+
+The public sample leaves shares undefined for zero-total weeks and rejects incomplete counts. That is an illustrative denominator policy; the confidential research inclusion rules are not distributed. The [metric dictionary](data-dictionary.md) explains these distinctions and why averaging user shares differs from pooling activity.
+
+### 2. Separate changes in behavior from differences between users
+
+I used pre-treatment matching and **difference-in-differences with developer and week fixed effects**, comparing Italy with France and Portugal. Developer-clustered inference accounts for repeated observations. The manuscript uses a Poisson framework and reports incidence-rate ratios.
+
+I analyzed public share alongside public and private counts, then decomposed public activity by type. This links an aggregate ratio movement to the behaviors responsible for it.
 
 ```mermaid
 flowchart LR
-    A[Developer activity] --> B[Public and private measures]
-    B --> C[Public share]
-    C --> D[Matched DiD]
-    B --> E[Activity decomposition]
-    A --> F[User-project-week choices]
-    F --> G[Conditional logistic model]
+    A["Developer-week activity"] --> B["Public and private counts"]
+    B --> C["Share and component effects"]
+    A --> D["New-project entry"]
+    C --> E["Where engagement changes"]
+    D --> E
+    style A fill:#eef2f6,stroke:#64748b,color:#172033
+    style B fill:#eef2f6,stroke:#64748b,color:#172033
+    style C fill:#e8effa,stroke:#45658d,color:#172033
+    style D fill:#eef2f6,stroke:#64748b,color:#172033
+    style E fill:#e8effa,stroke:#45658d,color:#172033
 ```
 
-## Findings and why they matter
+### 3. Model the decision to enter another project
 
-The decrease in public share was driven primarily by reduced public work, rather than increased private activity. Effects were concentrated in codification-intensive activities and the breadth of cross-project engagement. The project-entry analysis showed that AI access broadened cross-project engagement, with differences by experience.
+I used **conditional logistic regression on a user-project-week panel** to examine new-project engagement and differences by experience. This connects aggregate activity composition to a specific participation decision.
 
-The novel contribution is to examine **which activities receive effort**, alongside how much work gets done. In a business setting, the same analytical distinction matters when interpreting adoption, engagement, collaboration, or community-health metrics: a top-line total can hide a meaningful change in its composition.
+<details>
+<summary><strong>Choice-model considerations in the representative sample</strong></summary>
 
-## Analytical judgment
+The sample conditions on developer-week groups and compares eligible project alternatives within each group. Choice sets must use information available before the decision. Groups without outcome variation do not identify coefficients, and group-constant regressors cannot be identified separately. Interactions used to study relative preference must vary across alternatives.
 
-- **Shares require a denominator policy.** Weeks with no observed activity do not supply a meaningful public/private allocation ratio.
-- **Activity is a proxy for effort.** Contribution counts do not directly measure time spent or cognitive effort.
-- **Composition matters.** Decomposing a ratio helps explain whether its numerator, denominator, or both changed.
-- **Choice sets matter.** An entry model can be misleading if its alternatives use future information or omit realistic opportunities.
-- **Identification remains conditional.** Matching improves observed comparability; it cannot by itself remove unobserved differential shocks.
+These choices explain the public illustration; they are not a recovered specification of the proprietary entry model. The sample does not itself implement causal effect estimation.
 
-## Explore the work
+</details>
+
+## What makes the interpretation credible
+
+| Analytical risk | How it affects the decision |
+|---|---|
+| A changing denominator | A falling share can have multiple explanations; inspect its components |
+| Incomplete collection | Missing observations must not become apparent inactivity |
+| Future-informed project alternatives | The model could use information unavailable at the time of entry |
+| Unobserved country-specific shocks | Matching cannot by itself establish a causal counterfactual |
+| Treating every event as equal value | Event counts do not measure contribution usefulness or effort intensity |
+
+## What I owned and delivered
+
+I led question formulation, metric design, data preparation, matching, causal analysis, project-entry modeling, validation, and interpretation. The shared infrastructure spans approximately **680,000 developers, 2 million repositories, and 13.6 million user-week observations**; those are broader resource totals, not the model-specific estimation samples.
+
+The deliverable is an engagement analysis that connects **volume, composition, and participation breadth**. It shows how to investigate a metric movement before turning it into a product recommendation.
+
+## Explore the implementation
 
 > **Research status and code availability:** The research is currently under review. The full research code and data are proprietary and are not distributed here. The public code consists only of selected, simplified samples of the general workflow; it is not the complete research implementation or a replication package.
 
-| Sample | What it demonstrates |
+| Sample | What to inspect |
 |---|---|
-| [Metric dictionary](data-dictionary.md) | Field definitions, denominator policies, and labeled synthetic examples |
-| [Allocation features](allocation_features.py) | Public contribution, denominator handling, and share construction |
-| [Project-entry design](project_entry.py) | Representative conditional-logit design and within-group variation checks |
+| [Metric dictionary](data-dictionary.md) | Definitions, denominator policies, and labeled synthetic examples |
+| [Allocation features](allocation_features.py) | Public counts and share construction |
+| [Project-entry design](project_entry.py) | Conditional-logit illustration and within-group variation |
 | [Effect interpretation](effect_interpretation.py) | Relative effects versus percentage-point changes |
-| [Methodology](methodology.md) | Causal design, decomposition, and project-choice interpretation |
+| [Methodology](methodology.md) | Causal design, decomposition, and project choice |
 
-**Underlying study:** *Generative AI and Effort Allocation in Knowledge Work.*
+<details>
+<summary><strong>Research source and sample scope</strong></summary>
 
-## About the code
+This case study presents my contributions to collaborative doctoral research at UC Irvine, framed around the product decisions the analysis can inform. The underlying study is *Generative AI and Effort Allocation in Knowledge Work*. Product applications described here are proposed uses of the evidence, not claims of a commercial deployment or a tested product rollout.
 
-This is a curated research showcase. The Python files are condensed, refactored examples of selected workflows, with representative reconstructions where the full proprietary implementation is not included. They are designed for code review, not as a runnable replication package. Research results below describe the completed studies; the samples do not reproduce those estimates.
+Public files include selected refactored examples and representative reconstructions. They do not reproduce the research estimates. See [code provenance and scope](code-notes.md).
 
-The confidential dataset, original collection archive, credentials, and proprietary production code are not distributed. See [sample provenance and scope](code-notes.md).
+</details>
 
-## Research and contact
+---
 
 **Sardar Fatooreh Bonabi** · Data Science · University of California, Irvine  
 [GitHub](https://github.com/SardarBonabi/) · [LinkedIn](https://www.linkedin.com/in/sardarb/)
-
-This portfolio presents my contributions to collaborative doctoral research. Manuscript titles identify the underlying studies; no journal acceptance or publication status is implied.
