@@ -53,6 +53,8 @@ The novel contribution is to examine **which activities receive effort**, alongs
 
 ## Explore the work
 
+> **Research status and code availability:** The research is currently under review. The full research code and data are proprietary and are not distributed here. The public code consists only of selected, simplified samples of the general workflow; it is not the complete research implementation or a replication package.
+
 | Sample | What it demonstrates |
 |---|---|
 | [Allocation features](allocation_features.py) | Public contribution, denominator handling, and share construction |
