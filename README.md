@@ -57,6 +57,7 @@ The novel contribution is to examine **which activities receive effort**, alongs
 
 | Sample | What it demonstrates |
 |---|---|
+| [Metric dictionary](data-dictionary.md) | Field definitions, denominator policies, and labeled synthetic examples |
 | [Allocation features](allocation_features.py) | Public contribution, denominator handling, and share construction |
 | [Project-entry design](project_entry.py) | Representative conditional-logit design and within-group variation checks |
 | [Effect interpretation](effect_interpretation.py) | Relative effects versus percentage-point changes |
