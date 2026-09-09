@@ -1,6 +1,6 @@
 <div align="center">
 
-# Does AI Increase Participation in Shared Projects?
+# How Does an AI Product Change User Engagement and Participation?
 
 A quasi-experiment on how AI access changes contribution patterns and new-project participation across users.
 
