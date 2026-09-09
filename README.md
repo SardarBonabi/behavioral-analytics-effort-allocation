@@ -2,47 +2,64 @@
 
 # Does AI Increase Participation in Shared Projects?
 
-Understanding where user activity goes—and what engagement totals can hide.
+A quasi-experiment on how AI access changes contribution patterns and new-project participation across users.
 
-**Behavioral analytics · Metric design · Causal inference · Choice modeling**
+**Quasi-experimentation · Causal inference · Conditional logistic regression · Behavioral analytics**
 
-[Decision](#the-product-decision) · [Results](#results-and-interpretation) · [Approach](#analytical-approach) · [Code](#explore-the-implementation)
+[Overview](#project-overview) · [Experiment](#quasi-experimental-design) · [Impact](#impact-on-user-participation) · [Modeling](#modeling-new-project-participation) · [Code](#explore-the-implementation)
 
 </div>
 
-## The product decision
+## Project overview
 
-**Does an AI tool strengthen participation in a shared developer ecosystem, or change where users direct their activity?**
+**I used a quasi-experiment to estimate how access to an AI product changes where users contribute and whether they engage with new projects. I then examined how these responses differ by developer experience.**
 
-For a platform built around shared projects, total activity is only part of the picture. Public contributions can be inspected, reused, and built upon by others. Private contributions represent a different allocation of activity. A team evaluating engagement needs to understand both the total and its composition.
+Italy's temporary ChatGPT suspension created an external change in product availability. I compared developer behavior in Italy with behavior in France and Portugal before and during the interruption to estimate the effect of changed access.
 
-I measured the share of activity directed toward public contribution and examined participation in new projects. Using Italy's temporary ChatGPT suspension as an external change in access, I estimated how these behaviors changed relative to developers in France and Portugal.
+The analysis connects two levels of behavior: the share of activity directed toward public rather than private contribution, and the decision to enter another project. For a product team, this answers **whether the product changes participation, which behaviors account for that change, and which users respond**.
 
-## Results and interpretation
+## Quasi-experimental design
 
-| Evidence | Product meaning | Interpretation boundary |
-|---|---|---|
-| **Approximately 3% relative decrease in public share during lost access** | Access to the tool affected the composition of participation | This is not a three-percentage-point decrease or a measured change in time spent |
-| **Reduced public work drove the share decrease** | A ratio's components explain what changed in engagement | The result should not be described simply as users doing more private work |
-| **Stronger response among more experienced developers** | An average engagement effect can conceal segment differences | Experience patterns motivate product hypotheses; they do not establish a targeting strategy |
-| **AI access broadened cross-project engagement** | Participation breadth adds information beyond contribution volume | Project entry is distinct from sustained adoption or retention |
-
-The response was concentrated in codification-intensive activities and the breadth of cross-project engagement. **The decision-relevant finding is that access can influence where contributions go, alongside how much activity occurs.**
-
-## How this would inform an engagement strategy
-
-| Product question | Measurement or evaluation choice |
+| Design element | Implementation |
 |---|---|
-| Is the shared ecosystem becoming more active? | Pair public share with public volume, private volume, and total activity |
-| Are users exploring more of the platform? | Measure new-project entry separately from repeated activity in existing projects |
-| Which users respond? | Examine experience segments before interpreting the population average |
-| Would an onboarding or discovery change help? | Use the observed entry patterns to formulate a subsequent product experiment |
+| Product and external event | ChatGPT's temporary access suspension in Italy |
+| Treatment group | Developers in Italy |
+| Comparison group | Developers in France and Portugal |
+| Outcome panel | Developer-week public and private activity |
+| Causal approach | Pre-treatment matching and difference-in-differences |
+| Adjustment and inference | Developer and week fixed effects; developer-clustered standard errors |
+| Additional behavioral model | **Conditional logistic regression on a user-project-week panel** |
 
-These are applications of the analysis, not interventions tested here. Revenue, retention, and the business value of individual contributions were not measured. Public participation is relevant to a shared ecosystem; it is not automatically the preferred outcome for every developer or product.
+I matched developers using pre-treatment profile and behavior measures, then compared changes across countries. The manuscript uses a Poisson framework and reports incidence-rate ratios. This was an externally occurring quasi-experiment, not a randomized product rollout. The treatment captures country-level availability; individual ChatGPT usage is not directly observed.
 
-## Analytical approach
+```mermaid
+flowchart LR
+    A["External change in AI access"] --> B["Matched developer-week comparison"]
+    B --> C["Public share and activity components"]
+    B --> D["Participation across projects"]
+    C --> E["Impact and experience differences"]
+    D --> E
+    style A fill:#e8effa,stroke:#45658d,color:#172033
+    style B fill:#eef2f6,stroke:#64748b,color:#172033
+    style C fill:#eef2f6,stroke:#64748b,color:#172033
+    style D fill:#eef2f6,stroke:#64748b,color:#172033
+    style E fill:#e8effa,stroke:#45658d,color:#172033
+```
 
-### 1. Build an engagement metric with an explicit denominator
+## Impact on user participation
+
+| Finding | What changed |
+|---|---|
+| **Approximately 3% relative decrease in public share during lost access** | A smaller fraction of observed contribution was public |
+| **Reduced public work drove the decrease** | The response reflected lower public contribution rather than increased private activity |
+| **AI access broadened cross-project engagement** | The response extended to participation breadth, alongside activity composition |
+| **Stronger allocation response among more experienced developers** | Product impact differed across experience groups |
+
+The public-share estimate is a relative change, not a three-percentage-point decrease. Effects were concentrated in codification-intensive activities and the breadth of cross-project engagement.
+
+**The product insight is behavioral:** access affected both where users contributed and the breadth of their participation. These are observed contribution outcomes, not estimates of retention, time spent, or revenue.
+
+### How the outcomes were constructed
 
 I aggregated seven public activity types: repository creation, commits, pull requests, reviews, discussion initiation, discussion answers, and issues.
 
@@ -50,58 +67,51 @@ I aggregated seven public activity types: repository creation, commits, pull req
 public_share = public_contributions / (public_contributions + private_contributions)
 ```
 
-The developer-week panel aligns activity, country, experience, and calendar information. Private contribution measures do not imply access to private source code or its contents. Counts are behavioral proxies, not observed hours of effort.
+I analyzed the ratio alongside public and private counts, then decomposed public contribution by activity type. This identifies which behaviors explain the overall movement. Private activity measures do not imply access to private code or its contents.
 
-The public sample leaves shares undefined for zero-total weeks and rejects incomplete counts. That is an illustrative denominator policy; the confidential research inclusion rules are not distributed. The [metric dictionary](data-dictionary.md) explains these distinctions and why averaging user shares differs from pooling activity.
+The public example treats zero-total weeks as undefined shares and rejects missing counts. This is an illustrative policy, not the confidential final inclusion rule. The [metric dictionary](data-dictionary.md) explains denominator handling and aggregation with labeled synthetic examples.
 
-### 2. Separate changes in behavior from differences between users
+## Modeling new-project participation
 
-I used pre-treatment matching and **difference-in-differences with developer and week fixed effects**, comparing Italy with France and Portugal. Developer-clustered inference accounts for repeated observations. The manuscript uses a Poisson framework and reports incidence-rate ratios.
+### **Conditional logistic regression: from activity totals to user choices**
 
-I analyzed public share alongside public and private counts, then decomposed public activity by type. This links an aggregate ratio movement to the behaviors responsible for it.
+**I modeled new-project entry on a user-project-week panel using conditional logistic regression.** This examines a specific behavioral decision underlying participation breadth: whether a user engages with a new project. I investigated differences by developer experience alongside the aggregate allocation analysis.
 
-```mermaid
-flowchart LR
-    A["Developer-week activity"] --> B["Public and private counts"]
-    B --> C["Share and component effects"]
-    A --> D["New-project entry"]
-    C --> E["Where engagement changes"]
-    D --> E
-    style A fill:#eef2f6,stroke:#64748b,color:#172033
-    style B fill:#eef2f6,stroke:#64748b,color:#172033
-    style C fill:#e8effa,stroke:#45658d,color:#172033
-    style D fill:#eef2f6,stroke:#64748b,color:#172033
-    style E fill:#e8effa,stroke:#45658d,color:#172033
-```
-
-### 3. Model the decision to enter another project
-
-I used **conditional logistic regression on a user-project-week panel** to examine new-project engagement and differences by experience. This connects aggregate activity composition to a specific participation decision.
+The discrete-choice model complements the quasi-experimental analysis. It should not be read as a predictive benchmark; no out-of-sample performance score is claimed for this model.
 
 <details>
-<summary><strong>Choice-model considerations in the representative sample</strong></summary>
+<summary><strong>Technical detail: choice sets and identification</strong></summary>
 
-The sample conditions on developer-week groups and compares eligible project alternatives within each group. Choice sets must use information available before the decision. Groups without outcome variation do not identify coefficients, and group-constant regressors cannot be identified separately. Interactions used to study relative preference must vary across alternatives.
+The representative sample uses developer-week conditioning groups. Eligible alternatives must be defined using information available before the decision. Groups with no outcome variation do not identify coefficients, and group-constant regressors cannot be estimated separately. Interactions must vary across alternatives to explain relative preference.
 
-These choices explain the public illustration; they are not a recovered specification of the proprietary entry model. The sample does not itself implement causal effect estimation.
+These details describe the public illustration, not a recovered specification of the proprietary entry model. The sample itself does not implement causal effect estimation. See [project-entry design](project_entry.py).
 
 </details>
 
-## What makes the interpretation credible
+## How impact varies across users
 
-| Analytical risk | How it affects the decision |
+The allocation response was stronger among more experienced developers, and the project-entry analysis examined differences in cross-project engagement by experience. This shows why a population-average estimate is only part of the product-impact story.
+
+The interpretation is specific to the measured behavior: a larger change in public share does not establish that a segment receives more value on every outcome. These findings can inform hypotheses for segment-specific product evaluations; they do not establish a tested targeting policy.
+
+## Assessing the interpretation
+
+| Consideration | Implication |
 |---|---|
-| A changing denominator | A falling share can have multiple explanations; inspect its components |
-| Incomplete collection | Missing observations must not become apparent inactivity |
-| Future-informed project alternatives | The model could use information unavailable at the time of entry |
-| Unobserved country-specific shocks | Matching cannot by itself establish a causal counterfactual |
-| Treating every event as equal value | Event counts do not measure contribution usefulness or effort intensity |
+| Counterfactual trends | The comparison group must represent what would have happened without the interruption |
+| Observed matching | Improves comparability but cannot remove unobserved differential shocks |
+| Ratio decomposition | A share alone cannot reveal which component changed |
+| Collection completeness | Missing records must not become apparent inactivity |
+| Choice-set construction | Future-informed alternatives can leak outcomes into the entry model |
+| Behavioral proxies | Counts do not directly measure effort intensity or contribution value |
 
-## What I owned and delivered
+## My contribution and data scope
 
-I led question formulation, metric design, data preparation, matching, causal analysis, project-entry modeling, validation, and interpretation. The shared infrastructure spans approximately **680,000 developers, 2 million repositories, and 13.6 million user-week observations**; those are broader resource totals, not the model-specific estimation samples.
+I led question formulation, outcome construction, data preparation, matching, causal estimation, **conditional-logit modeling**, validation, and interpretation.
 
-The deliverable is an engagement analysis that connects **volume, composition, and participation breadth**. It shows how to investigate a metric movement before turning it into a product recommendation.
+The shared research infrastructure covers approximately **680,000 developers, 2 million repositories, and 13.6 million user-week observations**. These totals describe the broader data resource; matching and eligibility determine this study's model-specific samples.
+
+The result is evidence about **how AI access changes participation and how that response differs across users**, supported by an analysis of both aggregate behavior and project-entry decisions.
 
 ## Explore the implementation
 
@@ -118,7 +128,7 @@ The deliverable is an engagement analysis that connects **volume, composition, a
 <details>
 <summary><strong>Research source and sample scope</strong></summary>
 
-This case study presents my contributions to collaborative doctoral research at UC Irvine, framed around the product decisions the analysis can inform. The underlying study is *Generative AI and Effort Allocation in Knowledge Work*. Product applications described here are proposed uses of the evidence, not claims of a commercial deployment or a tested product rollout.
+This case study presents my contributions to collaborative doctoral research at UC Irvine, focused on quasi-experimental product impact analysis. The underlying study is *Generative AI and Effort Allocation in Knowledge Work*.
 
 Public files include selected refactored examples and representative reconstructions. They do not reproduce the research estimates. See [code provenance and scope](code-notes.md).
 
