@@ -1,11 +1,11 @@
 # Sample code and provenance
 
-The research accomplishments are described from Sardar Fatooreh Bonabi's account of his completed work. The manuscripts provide study context and findings. This release selectively illustrates methods without distributing the full proprietary implementations.
+This release presents selected research workflows without distributing the full proprietary implementations.
 
 | File | Relationship to the research |
 |---|---|
 | allocation_features.py | Representative reconstruction of manuscript outcome definitions and the broader processing workflow. |
-| project_entry.py | Reconstructed example of conditional logistic regression described in the resume; choice sets and conditioning groups are illustrative. |
+| project_entry.py | Reconstructed example of conditional logistic regression; choice sets and conditioning groups are illustrative. |
 | effect_interpretation.py | New explanatory helper for distinguishing relative changes and percentage-point changes. |
 
 ## What was refactored

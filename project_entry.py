@@ -1,4 +1,4 @@
-"""Representative conditional-logit reconstruction based on the resume.
+"""Representative conditional-logit reconstruction.
 
 A choice group is a developer-week in this example. This is a modeling example,
 not a claim that the original proprietary implementation used this exact choice
