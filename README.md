@@ -1,6 +1,6 @@
 <div align="center">
 
-# How Does an AI Product Change User Engagement and Participation?
+# Does AI Increase Participation in Shared Projects?
 
 A quasi-experiment on how AI access changes contribution patterns and new-project participation across users.
 
@@ -119,6 +119,7 @@ The result is evidence about **how AI access changes participation and how that 
 
 | Sample | What to inspect |
 |---|---|
+| [Modular data collection](data-collection.md) | Study-specific collection stages, multithreading, validation, PostgreSQL persistence, and recovery |
 | [Metric dictionary](data-dictionary.md) | Definitions, denominator policies, and labeled synthetic examples |
 | [Allocation features](allocation_features.py) | Public counts and share construction |
 | [Project-entry design](project_entry.py) | Conditional-logit illustration and within-group variation |
