@@ -18,6 +18,25 @@ The completed project-entry analysis uses a user-project-week panel and conditio
 
 Groups with no outcome variation do not identify conditional-logit coefficients. Excluding these groups changes the population supporting the estimate. A project set built from future behavior can leak the outcome into the alternatives and should be avoided.
 
+### Synthetic example: which comparisons identify the model?
+
+The following example illustrates the filtering logic in [project_entry.py](project_entry.py). All identifiers and values are synthetic; they are not research observations or fitted results. Each developer-week has two eligible projects defined before the decision.
+
+| Developer-week | Project | Entered | Project feature | Access interruption |
+|---|---|---:|---:|---:|
+| A, week 1 | X | 1 | 2 | 1 |
+| A, week 1 | Y | 0 | 5 | 1 |
+| B, week 1 | X | 0 | 2 | 0 |
+| B, week 1 | Y | 0 | 5 | 0 |
+| C, week 1 | X | 1 | 2 | 1 |
+| C, week 1 | Y | 1 | 5 | 1 |
+
+Only developer A's group has both outcomes and survives this sample's within-group variation filter. B's all-zero group and C's all-one group do not contribute to conditional coefficient estimation. One informative group is insufficient for a credible empirical model; this table demonstrates eligibility only.
+
+The project feature varies within A's group, while the access-interruption indicator does not. A standalone interruption coefficient therefore cannot be estimated with developer-week conditioning. An interruption-by-project-feature interaction varies across alternatives, but within-group variation alone does not guarantee identification: the full design must also have independent regressors and sufficient variation across groups. In this tiny example, the interaction equals the project feature in the only retained group, so their coefficients cannot be separately identified.
+
+**Product interpretation:** this sample compares project selection within informative developer-weeks. It does not by itself estimate whether AI access makes an otherwise inactive user enter any project. That overall participation question remains distinct from the conditional choice comparison and requires the appropriate causal outcome analysis.
+
 ## Interpretation
 
 The research connects reduced public contribution with changes in cross-project breadth and developer experience. It does not equate all public events with equal effort or value. The business relevance is metric decomposition: distinguish overall activity, allocation, and entry into new opportunities before drawing conclusions about engagement.
