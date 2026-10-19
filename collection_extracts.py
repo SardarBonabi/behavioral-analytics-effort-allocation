@@ -9,7 +9,7 @@ import json
 import re
 
 from collection_contracts import Permanent
-from collection_transforms import ACTIVITIES, normalize_page
+from collection_transforms import ACTIVITIES, normalize_page, validate_date, validate_text
 
 
 def record_key(*parts: str) -> str:
@@ -18,6 +18,10 @@ def record_key(*parts: str) -> str:
     Hashing is for deterministic key construction, not a substitute for the
     private identity-protection policy. Never pass raw usernames or credentials.
     """
+    if not parts:
+        raise Permanent('missing_key_dimensions')
+    for part in parts:
+        validate_text(part)
     return sha256(json.dumps(parts, ensure_ascii=True).encode()).hexdigest()
 
 
@@ -27,12 +31,17 @@ def parse_display_count(value: str, prefix: str = '') -> int:
     A removal label may use prefix='−'; the stored value is a magnitude. Missing
     elements, unrecognized formats, and arbitrary negative numbers are rejected.
     """
+    if not isinstance(value, str) or not isinstance(prefix, str):
+        raise Permanent('invalid_display_count')
     text = value.strip()
     if prefix and text.startswith(prefix):
         text = text[len(prefix):]
-    if not re.fullmatch(r'(?:\d+|\d{1,3}(?:,\d{3})+)', text):
+    if not re.fullmatch(r'(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)', text):
         raise Permanent('invalid_display_count')
-    return int(text.replace(',', ''))
+    try:
+        return int(text.replace(',', ''))
+    except ValueError:
+        raise Permanent('invalid_display_count') from None
 
 
 def weekly_record(developer_key: str, week: str, public_counts: dict,
@@ -58,6 +67,8 @@ def language_records(repository_key: str, observed_at: str, language_bytes: dict
     An empty language dictionary yields no language rows; the enclosing page
     checkpoint still records successful collection. It is not a failed request.
     """
+    validate_text(repository_key)
+    validate_date(observed_at)
     rows = tuple({'record_key': record_key(repository_key, observed_at, language),
                   'repository_key': repository_key, 'observed_at': observed_at,
                   'language': language, 'bytes': byte_count}
@@ -74,6 +85,8 @@ def participation_records(developer_key: str, week: str, events):
     references are a validation failure. Event-based counts do not replace the
     complete weekly totals where only partial detail is visible.
     """
+    validate_text(developer_key)
+    validate_date(week)
     seen, counts = {}, {}
     for event_key, repository_key, activity_type in events:
         if not all(isinstance(x, str) and x.strip()
