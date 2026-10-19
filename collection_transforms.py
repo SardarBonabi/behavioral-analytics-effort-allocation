@@ -4,6 +4,7 @@ Research under review. No raw source payloads, names, contact fields or datasets
 are distributed. Private parsers supply normalized fields and stable opaque keys.
 """
 from datetime import date
+from collections.abc import Mapping
 
 from collection_contracts import Permanent, Record
 
@@ -27,6 +28,20 @@ COUNTS = {*ACTIVITIES, 'private_contributions', 'public_repositories', 'stars',
 DATES = {'week', 'account_created_at', 'created_at', 'observed_at'}
 
 
+def validate_text(value):
+    if not isinstance(value, str) or not value.strip():
+        raise Permanent('invalid_text')
+
+
+def validate_date(value):
+    """Require canonical YYYY-MM-DD so keys cannot encode one day differently."""
+    try:
+        if not isinstance(value, str) or date.fromisoformat(value).isoformat() != value:
+            raise ValueError
+    except (TypeError, ValueError):
+        raise Permanent('invalid_date') from None
+
+
 def normalize_page(stage, rows) -> tuple[Record, ...]:
     """Reject an incomplete page as a unit, leaving its restart position intact.
 
@@ -38,6 +53,8 @@ def normalize_page(stage, rows) -> tuple[Record, ...]:
         raise Permanent('unknown_stage')
     records, seen = [], set()
     for row in rows:
+        if not isinstance(row, Mapping):
+            raise Permanent('invalid_record_shape')
         key = row.get('record_key')
         if not isinstance(key, str) or not key.strip() or key in seen:
             raise Permanent('invalid_or_duplicate_record_key')
@@ -51,15 +68,12 @@ def normalize_page(stage, rows) -> tuple[Record, ...]:
                 if type(value) is not int or value < 0:
                     raise Permanent('invalid_count')
             elif field in DATES:
-                try:
-                    date.fromisoformat(value)  # Normalized ISO dates, no local timezone assumptions.
-                except (TypeError, ValueError):
-                    raise Permanent('invalid_date') from None
+                validate_date(value)
             elif field in {'coverage_complete', 'is_fork'}:
                 if type(value) is not bool:
                     raise Permanent('invalid_boolean')
-            elif not isinstance(value, str) or not value.strip():
-                raise Permanent('invalid_text')
+            else:
+                validate_text(value)
         if stage == 'weekly_activity' and not values['coverage_complete']:
             raise Permanent('incomplete_week')  # Missing collection is never zero activity.
         if stage == 'participation' and values['activity_type'] not in ACTIVITIES:
