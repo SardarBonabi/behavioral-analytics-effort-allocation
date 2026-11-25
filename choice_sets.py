@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_complex_dtype
 
+from choice_design import validate_within_group_rank
+
 
 def prepare_choice_sets(choices: pd.DataFrame, feature_columns: list[str]) -> pd.DataFrame:
     """Return observed groups with binary outcome variation and a usable design.
@@ -42,8 +44,5 @@ def prepare_choice_sets(choices: pd.DataFrame, feature_columns: list[str]) -> pd
     eligible = data.loc[variation.eq(2)].copy()
     if eligible.empty:
         raise ValueError("No groups with within-group outcome variation")
-    design = eligible[feature_columns].astype(float)
-    centered = design - design.groupby(eligible["choice_group"]).transform("mean")
-    if np.linalg.matrix_rank(centered.to_numpy()) < len(feature_columns):
-        raise ValueError("Features are constant or linearly dependent within choice groups")
+    validate_within_group_rank(eligible[feature_columns], eligible["choice_group"])
     return eligible
